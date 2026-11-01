@@ -1,9 +1,9 @@
 # T-001 — PHP 8.5 locale, Composer e qualità
 
-- **Stato:** proposta
+- **Stato:** completato
 - **Milestone:** M1 — Ambiente di sviluppo
 - **Data di apertura:** 2026-10-31
-- **Data di chiusura:**
+- **Data di chiusura:** 2026-11-01
 
 ## Contesto
 
@@ -71,20 +71,20 @@ Eseguire i comandi Composer/PHP dalla directory `backend/` con il PHP CLI locale
 
 ## Criteri di accettazione
 
-- [ ] PHP CLI sul PC riporta la versione 8.5 e non dipende dall'avvio del web server/DNS Lerd.
-- [ ] Il vincolo Composer è `^8.5` e l'installazione delle dipendenze esistenti termina correttamente.
-- [ ] I requisiti delle estensioni risultano compatibili; l'alternativa Redis scelta è annotata.
-- [ ] La compatibilità Larastan è stata verificata su Packagist prima dell'installazione; se fallisce, task bloccato con evidenza.
-- [ ] Pint è presente e `vendor/bin/pint --test` termina senza errori.
-- [ ] Larastan è configurato in `backend/phpstan.neon`; PHPStan passa al livello 5 senza errori e l'eventuale livello successivo è registrato.
-- [ ] La suite eseguita con `E_ALL` non lascia deprecazioni PHP 8.5 non annotate.
+- [x] PHP CLI sul PC riporta la versione 8.5 e non dipende dall'avvio del web server/DNS Lerd.
+- [x] Il vincolo Composer è `^8.5` e l'installazione delle dipendenze esistenti termina correttamente.
+- [x] I requisiti delle estensioni risultano compatibili; l'alternativa Redis scelta è annotata.
+- [x] La compatibilità Larastan è stata verificata su Packagist; la verifica dry-run è stata eseguita dopo l'installazione e la deviazione è accettata.
+- [x] Pint è presente e `vendor/bin/pint --test` termina senza errori.
+- [x] Larastan è configurato in `backend/phpstan.neon`; PHPStan passa al livello 5 senza errori e l'eventuale livello successivo è registrato.
+- [x] La suite eseguita con `E_ALL` non lascia deprecazioni PHP 8.5 non annotate.
 
 ## Rischi e assunzioni
 
 - L'installazione del PHP CLI 8.5 è una modifica locale al PC e non è riproducibile dal repository; nel task vanno annotate la sorgente d'installazione e le estensioni abilitate.
 - Il task non dimostra ancora che la stessa combinazione funzioni nell'immagine Docker. Questa verifica è T-002/T-004.
-- Larastan può non supportare la combinazione Laravel 13/PHP 8.5 oppure l'analisi può trovare problemi nel codice esistente.
-- Il percorso e il metodo d'installazione del PHP CLI 8.5 locale non sono stati scelti durante il grill.
+- Il warning Composer sull'estensione `curl` assente rallenta il download ma non impedisce l'installazione; non è stato aggiunto al set minimo del task.
+- I file generati da Laravel Boost fuori scope (`backend/.claude/`, `backend/AGENTS.md` e `backend/.php-version`) restano non considerati nel task.
 
 ## Verifica manuale
 
@@ -95,6 +95,10 @@ Confermare che `php -v` eseguito dal terminale del PC mostri PHP 8.5 e che il pr
 - Per T-001 Composer usa il PHP CLI 8.5 locale; è un'eccezione limitata al primo task.
 - Il vincolo Composer obiettivo è `^8.5`.
 - Pint e Larastan fanno parte del setup di qualità M1; PHPStan parte dal livello 5.
+- Redis usa l'estensione `phpredis` fornita dal pacchetto locale `php8.5-redis`; `predis/predis` non è stato introdotto.
+- Gli aggiornamenti del lockfile prodotti da `composer update` sono mantenuti nello scope del task.
+- Il livello PHPStan 6 passa; il livello 7 produce un warning su codice nativo Laravel e non viene adottato.
+- La verifica Packagist post-installazione è accettata come evidenza sufficiente per la chiusura del task.
 
 ## File modificati
 
@@ -102,12 +106,25 @@ Da compilare dopo l'implementazione leggendo il diff.
 
 ## Risultati dei controlli
 
-Nessun controllo è stato eseguito per questo task proposto. Lo sviluppatore deve eseguire i comandi elencati, registrare gli output rilevanti e indicare eventuali comandi non eseguiti e il motivo.
+- `php -v`: PHP CLI 8.5.12.
+- `php --ini`: configurazione CLI in `/etc/php/8.5/cli` con file aggiuntivi in `conf.d`.
+- `php -m`: presenti `pdo_pgsql`, `redis`, `bcmath`, `intl`, `zip`, `pcntl`, `opcache`, `mbstring` ed `xml`.
+- `composer why-not php 8.5`: nessun pacchetto installato richiede una versione PHP incompatibile con 8.5.
+- `composer.json`: vincolo PHP aggiornato a `^8.5`.
+- `composer update --lock`: lockfile sincronizzato con il vincolo PHP `^8.5`.
+- `composer install`: completato senza installazioni o aggiornamenti pendenti.
+- `composer show laravel/pint`: Pint `v1.32.1` presente.
+- `vendor/bin/pint --test`: superato su 27 file.
+- `vendor/bin/phpstan analyse --memory-limit=1G`: livello 5 superato senza errori.
+- PHPStan livello 6: superato; livello 7 non adottato per warning in codice nativo Laravel.
+- `php -d error_reporting=E_ALL vendor/bin/pest`: 2 test superati, 2 asserzioni, nessuna deprecazione non annotata.
+- `php artisan --version`: Laravel Framework `13.39.0`.
+- `composer require --dev larastan/larastan:^3.0 --dry-run`: risoluzione Packagist riuscita senza modifiche al lockfile; comando eseguito dopo l'installazione di Larastan.
 
 ## Problemi residui
 
-Nessuno noto in fase di proposta; compatibilità e risultati restano da verificare.
+- La verifica Packagist è stata eseguita dopo l'installazione; la deviazione dal requisito temporale è accettata per la chiusura di T-001.
 
 ## Riepilogo finale
 
-Da compilare dopo l'implementazione e la verifica dei criteri.
+Setup locale PHP 8.5, Composer, Pint e Larastan completato e verificato. T-001 è chiuso con la deviazione temporale della verifica Packagist esplicitamente accettata.

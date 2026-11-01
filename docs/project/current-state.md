@@ -1,9 +1,9 @@
 # Stato corrente
 
-- **Ultimo aggiornamento:** 2026-10-31
+- **Ultimo aggiornamento:** 2026-11-01
 - **Milestone in corso:** M1 — Ambiente di sviluppo (`0.1.0`)
 - **Task attivo:** nessuno
-- **Task proposti:** [T-001](../tasks/proposed/T-001-php-85-locale-composer-qualita.md), [T-002](../tasks/proposed/T-002-dockerfile-php-85.md), [T-003](../tasks/proposed/T-003-compose-postgres-redis.md), [T-004](../tasks/proposed/T-004-compose-app.md), [T-005](../tasks/proposed/T-005-pest-postgres-redis-test.md), [T-006](../tasks/proposed/T-006-nginx-smoke-test.md)
+- **Task proposti:** [T-002](../tasks/proposed/T-002-dockerfile-php-85.md), [T-003](../tasks/proposed/T-003-compose-postgres-redis.md), [T-004](../tasks/proposed/T-004-compose-app.md), [T-005](../tasks/proposed/T-005-pest-postgres-redis-test.md), [T-006](../tasks/proposed/T-006-nginx-smoke-test.md)
 
 ## Stato delle feature
 
