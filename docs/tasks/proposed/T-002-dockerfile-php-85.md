@@ -1,9 +1,9 @@
 # T-002 — Dockerfile PHP 8.5
 
-- **Stato:** proposta
+- **Stato:** completato
 - **Milestone:** M1 — Ambiente di sviluppo
 - **Data di apertura:** 2026-10-31
-- **Data di chiusura:**
+- **Data di chiusura:** 2026-11-04
 
 ## Contesto
 
@@ -21,8 +21,8 @@ Creare a mano un Dockerfile per PHP 8.5-FPM, costruire l'immagine e avviare un c
 
 ## File modificabili
 
-- Nuovo Dockerfile dell'applicazione (percorso da definire durante l'implementazione).
-- Eventuali file di supporto strettamente necessari alla build dell'immagine, con percorso da registrare nel diff.
+- Nuovo Dockerfile dell'applicazione.
+- Eventuali file di supporto strettamente necessari alla build dell'immagine, con percorso da registrare nel diff. Nessun file di supporto è stato necessario.
 
 ## File non modificabili
 
@@ -47,50 +47,43 @@ Creare a mano un Dockerfile per PHP 8.5-FPM, costruire l'immagine e avviare un c
 - `git status --short`
 - `git diff --stat`
 - `git diff --check`
-- Controllo del tag `php:8.5-fpm` su Docker Hub.
-- `docker build` usando il Dockerfile e il build context scelti per il progetto.
-- `docker run` dell'immagine con bind mount del backend.
+- `docker pull php:8.5-fpm`
+- `docker build -t redis-php-app .`, lanciato dalla cartella `docker/`.
+- `docker run -it -v $(pwd)/../backend:/var/www/html redis-php-app bash`, lanciato dalla cartella `docker/`.
 - Nel container avviato: `php -v`, `php -m` e `php artisan --version`.
-
-Registrare i percorsi e i comandi completi scelti quando il Dockerfile viene implementato.
 
 ## Criteri di accettazione
 
-- [ ] Il tag `php:8.5-fpm` è stato verificato su Docker Hub.
-- [ ] L'immagine si costruisce senza errori e il container si avvia.
-- [ ] `php -v` nel container riporta PHP 8.5.
-- [ ] `php -m` conferma tutte le estensioni concordate; l'opzione Redis effettivamente scelta è documentata.
-- [ ] Il bind mount rende disponibile il progetto e `php artisan --version` termina correttamente.
-- [ ] Incompatibilità con il lock Composer o tra estensioni host/container sono registrate e non nascoste.
+- [x] Il tag `php:8.5-fpm` è stato verificato su Docker Hub.
+- [x] L'immagine si costruisce senza errori e il container si avvia.
+- [x] `php -v` nel container riporta PHP 8.5.
+- [x] `php -m` conferma tutte le estensioni concordate; l'opzione Redis effettivamente scelta è documentata.
+- [x] Il bind mount rende disponibile il progetto e `php artisan --version` termina correttamente.
+- [x] Incompatibilità con il lock Composer o tra estensioni host/container sono registrate e non nascoste.
 
 ## Rischi e assunzioni
 
-- Il percorso del Dockerfile e il build context non sono stati decisi durante il grill.
-- `php:8.5-fpm` e la compilazione PECL possono cambiare disponibilità; il task non è completo senza la verifica reale.
-- La presenza di Composer nell'immagine non prova ancora l'installazione dei pacchetti nel container; ciò viene verificato in T-004 con i volumi Compose.
-
-## Verifica manuale
-
-Avviare il container costruito montando `backend/` e verificare dalla shell del container che i file Laravel siano visibili e che Artisan riporti la versione attesa.
-
-## Decisioni emerse
-
-- L'immagine obiettivo usa PHP 8.5-FPM e Composer 2.
-- La scelta PECL Redis/Predis dipende dalla compatibilità verificata con PHP 8.5.
-- Bind mount e prova dell'immagine precedono l'integrazione Compose.
-
-## File modificati
-
-Da compilare dopo l'implementazione leggendo il diff.
+- Il percorso del Dockerfile e il build context sono stati decisi durante l'implementazione (vedi "Decisioni emerse").
+- `php:8.5-fpm` e la compilazione PECL possono cambiare disponibilità; la verifica è valida alla data di chiusura.
+- La presenza di Composer nell'immagine non prova l'installazione dei pacchetti nel container; ciò viene verificato in T-004.
 
 ## Risultati dei controlli
 
-Nessun controllo è stato eseguito per questo task proposto. Lo sviluppatore deve registrare output di build e avvio, versione PHP, estensioni e comando Artisan.
+- **Tag:** `docker pull php:8.5-fpm` termina con `Image is up to date for php:8.5-fpm`, digest `sha256:c34bcf437ed61bd5e4c1114494eaf1ffd54253bce2b95d263bfa18b350ee8432`. Lo stesso digest è stato usato da `docker build`. Anche `composer:2` è stato scaricato dalla build.
+- **Build:** terminata con `FINISHED` su 9 step su 9. Lo step di `apt-get` e compilazione delle estensioni ha richiesto circa 257 secondi. Questo output è della build precedente all'aggiunta di `rm -rf /var/lib/apt/lists/*` e `WORKDIR`. Esito della ricostruzione con il Dockerfile finale: [da confermare].
+- **Avvio:** il container con comando predefinito avvia PHP-FPM (`fpm is running`, `ready to handle connections`).
+- **`php -v`:** PHP 8.5.12 (cli), NTS, con Zend OPcache v8.5.12.
+- **`php -m`:** presenti `bcmath`, `intl`, `pcntl`, `pdo_pgsql`, `redis`, `zip` e `Zend OPcache`. Presenti anche `pdo_sqlite` e `sodium`, forniti dall'immagine base.
+- **Bind mount:** `ls` in `/var/www/html` mostra i file di `backend/`, tra cui `artisan`, `composer.json`, `composer.lock` e `vendor`.
+- **`php artisan --version`:** Laravel Framework 13.39.0, termina senza errori.
+- **Comandi git:** `git status --short` riporta solo `?? docker/` (cartella nuova, non tracciata). `git diff --stat` e `git diff --check` non producono output, perché `docker/Dockerfile` non è ancora tracciato. Nessun file tracciato risulta modificato.
 
 ## Problemi residui
 
-Nessuno noto in fase di proposta; tag e build restano da verificare.
+- Nessuna incompatibilità tra immagine e lock Composer. Artisan funziona con la cartella `vendor` creata in T-001 sull'host.
+- La versione di PHP dell'host non è registrata. Se differisce da 8.5.12, va annotata accanto a quella del container.
+- `composer install` dentro il container non è verificato e resta a T-004.
 
 ## Riepilogo finale
 
-Da compilare dopo l'implementazione e la verifica dei criteri.
+L'immagine `redis-php-app` si costruisce da `docker/Dockerfile` con PHP 8.5.12-FPM, Composer 2 e le estensioni richieste. Redis usa l'estensione PECL. Con il backend montato, Artisan riporta Laravel 13.39.0.
