@@ -9,3 +9,4 @@ Categorie disponibili: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Se
 ### Added
 
 - Struttura iniziale della documentazione di progetto e dei task.
+- Dockerfile PHP 8.5-FPM in `docker/Dockerfile` con Composer 2 e le estensioni `pdo_pgsql`, `intl`, `zip`, `bcmath`, `pcntl` e `redis` (PECL).
