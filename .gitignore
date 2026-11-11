@@ -1,0 +1,6 @@
+# Variabili d'ambiente
+compose.env
+
+# Dipendenze di progetto
+backend/node_modules
+backend/vendor
